@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid h-100">
+  <div class="row h-100">
+    <!-- Левая панель с чатами -->
+    <div class="col-md-3 border-end p-3 d-flex flex-column">
+      <!-- Поиск чатов -->
+      <input type="text" class="form-control mb-3" placeholder="Поиск чатов...">
+
+      <!-- Список чатов -->
+      <ul class="list-group">
+        {% for chat in chats %}
+        <li class="list-group-item">
+          <a href="#" class="text-decoration-none">
+            {{ chat.name }}
+          </a>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+
+    <!-- Правая панель с выбранным чатом или надписью -->
+    <div class="col-md-9 d-flex align-items-center justify-content-center">
+      {% if selected_chat %}
+      <div class="w-100 h-100 d-flex flex-column">
+        <!-- Заголовок выбранного чата -->
+        <div class="border-bottom p-3 bg-light">
+          {{ selected_chat.name }}
+        </div>
+        <!-- Окно сообщений -->
+        <div class="flex-grow-1 p-3 overflow-auto">
+          {% for message in messages %}
+          <div>
+            <strong>{{ message.sender }}</strong>: {{ message.text }}
+          </div>
+          {% endfor %}
+        </div>
+        <!-- Форма отправки сообщения -->
+        <div class="border-top p-3 bg-light">
+          <form method="post" action="{% url 'send_message' selected_chat.id %}">
+            {% csrf_token %}
+            <div class="input-group">
+              <input type="text" name="message" class="form-control" placeholder="Введите сообщение...">
+              <button class="btn btn-primary" type="submit">Отправить</button>
+            </div>
+          </form>
+        </div>
+      </div>
+      {% else %}
+      <!-- Надпись, которая будет по центру правой панели -->
+      <h4 class="text-muted">Выберите, кому хотели бы написать</h4>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
