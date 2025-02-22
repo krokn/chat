@@ -1,0 +1,234 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid h-100">
+  <div class="row h-100">
+    <!-- Левая панель с чатами -->
+    <div class="col-md-3 border-end p-3 d-flex flex-column">
+      <input type="text" class="form-control mb-3" placeholder="Поиск чатов...">
+      <ul class="list-group">
+        {% for chat in chats %}
+        <li class="list-group-item">
+          <a href="?chat_id={{ chat.id }}" class="text-decoration-none">{{ chat.name }}</a>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+
+    <!-- Правая панель с выбранным чатом -->
+    <div class="col-md-9 d-flex align-items-center justify-content-center">
+      {% if selected_chat %}
+      <div class="w-100 h-100 d-flex flex-column">
+        <div class="border-bottom p-3">
+          {{ selected_chat.name }}
+        </div>
+
+        <!-- Окно сообщений -->
+        <div id="chat-window" class="flex-grow-1 p-3 overflow-auto">
+          {% for message in messages %}
+          <div class="message-wrapper">
+            <div class="avatar">💻</div>
+            <div class="message {% if message.sender == 'Ты' %}sent{% else %}received{% endif %}">
+              <strong class="message-sender">{{ message.sender }}</strong>
+              <p class="message-text">{{ message.text }}</p>
+              <span class="message-time">12:34</span>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+
+        <div class="border-top p-3">
+          <form method="post" action="{% url 'send_message' selected_chat.id %}">
+            {% csrf_token %}
+            <div class="input-group">
+              <input type="text" name="message" class="form-control" placeholder="Введите сообщение...">
+              <button class="btn btn-primary" type="submit">➤</button>
+            </div>
+          </form>
+        </div>
+      </div>
+      {% else %}
+      <h4 class="text-muted">Выберите чат</h4>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    var chatWindow = document.getElementById("chat-window");
+    chatWindow.scrollTop = chatWindow.scrollHeight;
+  });
+</script>
+
+<style>
+/* Общий фон страницы */
+body {
+  background-color: #101116; /* Тёмный фон */
+  color: #ffffff; /* Белый цвет текста */
+  font-family: 'Arial', sans-serif;
+}
+
+/* Левая панель (список чатов) */
+.col-md-3 {
+  background-color: #181A24; /* Темный фон панели */
+  color: #ffffff; /* Белый текст */
+  border-right: 2px solid #232532; /* Легкий градиентный бордер */
+}
+
+/* Заголовок активного чата */
+.border-bottom {
+  background-color: #1A1C2B; /* Темный фон */
+  color: #ffffff;
+  font-weight: bold;
+  text-align: center;
+  padding: 12px;
+  border-bottom: 2px solid #3F5576; /* Легкий акцент */
+}
+
+/* Окно чата */
+#chat-window {
+  background-color: #181A24; /* Темный фон для чата */
+  border-radius: 8px;
+  padding: 15px;
+  overflow-y: auto;
+  height: 500px; /* Ограничение высоты для окна сообщений */
+}
+
+/* Сообщения */
+.message-wrapper {
+  display: flex;
+  align-items: flex-end;
+  margin-bottom: 10px;
+}
+
+/* Аватарка */
+.avatar {
+  width: 40px;
+  height: 40px;
+  background-color: #232532; /* Темный фон для аватарки */
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  color: #8689AC; /* Цвет текста на аватарке */
+  margin-right: 10px;
+}
+
+/* Тело сообщения */
+/* Сообщения */
+.message-wrapper {
+  display: flex;
+  align-items: flex-end;
+  margin-bottom: 10px;
+  position: relative;
+}
+
+/* Тело сообщения */
+.message {
+  padding: 4px 16px;
+  border-radius: 18px;
+  font-size: 15px;
+  max-width: 65%;
+  box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.2);
+  position: relative;
+  word-wrap: break-word;
+}
+
+/* Время сообщения */
+.message-time {
+  font-size: 12px;
+  color: #8689AC; /* Цвет времени */
+  position: absolute;
+  right: 10px; /* Располагаем время справа */
+  bottom: 5px; /* Небольшой отступ снизу */
+}
+
+/* Отправленные сообщения */
+.sent {
+  background-color: #3F5576; /* Цвет фона для отправленных сообщений */
+  color: #ffffff;
+  align-self: flex-end;
+  border-top-right-radius: 5px;
+}
+
+/* Полученные сообщения */
+.received {
+  background-color: #2F3148; /* Цвет фона для полученных сообщений */
+  color: #ffffff;
+  border-top-left-radius: 5px;
+}
+
+/* Время сообщения */
+.message-time {
+  font-size: 12px;
+  color: #8689AC; /* Цвет времени */
+  display: block;
+  text-align: right;
+  margin-top: 5px;
+}
+
+/* Список чатов */
+.list-group-item {
+  background-color: transparent;
+  color: #ffffff;
+  border: none;
+}
+
+.list-group-item a {
+  color: #8689AC; /* Цвет ссылок в списке чатов */
+  transition: 0.3s;
+}
+
+.list-group-item a:hover {
+  color: #3F5576; /* Цвет при наведении */
+}
+
+/* Форма отправки */
+.border-top {
+  background-color: #181A24;
+  padding: 10px;
+}
+
+.input-group input {
+  background-color: #232532; /* Темный фон для поля ввода */
+  color: #ffffff;
+  border: 1px solid #3F5576; /* Легкая обводка */
+  border-radius: 25px;
+  padding: 12px;
+}
+
+.input-group input::placeholder {
+  color: #8689AC; /* Цвет подсказки в поле */
+}
+
+/* Кнопка отправки */
+.input-group button {
+  background-color: #3F5576; /* Темно-синий цвет кнопки */
+  border: none;
+  color: #ffffff;
+  font-weight: bold;
+  border-radius: 25px;
+  padding: 10px 18px;
+}
+
+.input-group button:hover {
+  background-color: #2F3148; /* Цвет при наведении на кнопку */
+}
+
+/* Фон и текст при поиске чатов */
+.form-control {
+  background-color: #232532; /* Фон для поля поиска */
+  color: #ffffff; /* Белый текст */
+  border: 1px solid #3F5576; /* Легкая обводка */
+  border-radius: 25px;
+  padding: 12px;
+}
+
+.form-control::placeholder {
+  color: #8689AC; /* Цвет подсказки в поле поиска */
+}
+
+</style>
+{% endblock %}
